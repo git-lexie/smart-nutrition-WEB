@@ -25,12 +25,7 @@ export default function LandingPage() {
           <Activity className="h-6 w-6" />
           <span>SmartNutri</span>
         </div>
-        <Link 
-          href="/login" 
-          className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-        >
-          Login
-        </Link>
+
       </nav>
 
       {/* Hero Section */}
