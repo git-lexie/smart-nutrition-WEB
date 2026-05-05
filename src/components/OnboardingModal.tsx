@@ -27,9 +27,9 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
     setLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      // const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       // 1. Send data to Backend
-      await axios.put(`${baseUrl}/api/user/profile`, formData, {
+      await axios.put(`/api/user/profile`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // 2. Trigger completion in Parent (HomePage)
