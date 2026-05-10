@@ -27,10 +27,21 @@ export async function PUT(req: any) {
     if (activityLevel) updateFields["profile.activityLevel"] = activityLevel;
     if (voiceGender) updateFields["profile.voiceGender"] = voiceGender;
 
-    const updatedUser = await User.findByIdAndUpdate(decoded.id, { $set: updateFields }, { new: true }).lean();
-    await logUserAction(decoded.id, 'PROFILE_UPDATE', { updateFields });
+    const updatedUser = await User.findByIdAndUpdate(
+      decoded.id, 
+      { $set: updateFields }, 
+      { new: true }
+    ).lean();
+
+    await logUserAction(
+      decoded.id, 'PROFILE_UPDATE', 
+      { updateFields }
+    );
     
-    return NextResponse.json({ success: true, user: updatedUser });
+    return NextResponse.json({ 
+      success: true, user: updatedUser 
+    });
+    
   } catch (err) {
     return NextResponse.json({ message: "Error updating profile" }, { status: 500 });
   }
