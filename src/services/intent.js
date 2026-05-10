@@ -70,4 +70,3 @@ export const processPlateIntent = async (foodList) => {
 
     return { totalMacros, identifiedFoods };
 };
-
