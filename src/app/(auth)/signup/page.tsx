@@ -7,7 +7,14 @@ import { Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({ 
+    firstName: '', 
+    middleName: '', 
+    lastName: '', 
+    email: '', 
+    password: '', 
+    confirmPassword: '' 
+  });
   const [error, setError] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
@@ -21,6 +28,14 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); 
+
+    if (!formData.firstName.trim()) {
+      return setError('First name is required.');
+    }
+
+    if (!formData.lastName.trim()) {
+      return setError('Last name is required.');
+    }
 
     if (!validateEmail(formData.email)) {
       return setError('Please enter a valid email address.');
@@ -41,7 +56,9 @@ export default function SignupPage() {
       console.log("Attempting to connect to:", endpoint); 
       
       await axios.post(endpoint, {
-        name: formData.name,
+        firstName: formData.firstName,
+        middleName: formData.middleName,
+        lastName: formData.lastName,
         email: formData.email,
         password: formData.password
       });
@@ -53,7 +70,6 @@ export default function SignupPage() {
       if (!err.response) {
         setError('Cannot connect to server. Ensure the backend is running.');
       } else {
-        // This will now show the EXACT reason it crashed from the backend!
         setError(err.response?.data?.message || 'Signup failed.');
       }
     } finally {
@@ -69,18 +85,46 @@ export default function SignupPage() {
         {error && <div className="mb-4 text-red-500 bg-red-100 p-3 rounded-lg text-center text-sm font-bold border border-red-200">{error}</div>}
         
         <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* First Name & Last Name */}
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <User className="absolute left-3 top-3.5 text-slate-400" size={20}/>
+              <input 
+                required 
+                type="text" 
+                placeholder="First Name" 
+                className="w-full pl-10 p-3 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-slate-700 dark:text-white transition-all" 
+                value={formData.firstName} 
+                onChange={e => setFormData({...formData, firstName: e.target.value})} 
+              />
+            </div>
+            <div className="relative flex-1">
+              <User className="absolute left-3 top-3.5 text-slate-400" size={20}/>
+              <input 
+                required 
+                type="text" 
+                placeholder="Last Name" 
+                className="w-full pl-10 p-3 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-slate-700 dark:text-white transition-all" 
+                value={formData.lastName} 
+                onChange={e => setFormData({...formData, lastName: e.target.value})} 
+              />
+            </div>
+          </div>
+
+          {/* Middle Name (optional) */}
           <div className="relative">
             <User className="absolute left-3 top-3.5 text-slate-400" size={20}/>
             <input 
-              required 
               type="text" 
-              placeholder="Full Name" 
+              placeholder="Middle Name (optional)" 
               className="w-full pl-10 p-3 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-slate-700 dark:text-white transition-all" 
-              value={formData.name} 
-              onChange={e => setFormData({...formData, name: e.target.value})} 
+              value={formData.middleName} 
+              onChange={e => setFormData({...formData, middleName: e.target.value})} 
             />
           </div>
           
+          {/* Email */}
           <div className="relative">
             <Mail className="absolute left-3 top-3.5 text-slate-400" size={20}/>
             <input 
@@ -93,6 +137,7 @@ export default function SignupPage() {
             />
           </div>
           
+          {/* Password */}
           <div className="relative">
             <Lock className="absolute left-3 top-3.5 text-slate-400" size={20}/>
             <input 
@@ -112,6 +157,7 @@ export default function SignupPage() {
             </button>
           </div>
           
+          {/* Confirm Password */}
           <div className="relative">
             <Lock className="absolute left-3 top-3.5 text-slate-400" size={20}/>
             <input 

@@ -18,7 +18,7 @@ export async function PUT(req: any, context: { params: { id: string } }) {
     if (!decoded) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     
     await dbConnect();
-    const sessionId = context.params.id; // Fixed Next.js param access
+    const { id: sessionId } = await context.params; // Fixed Next.js param access
     const { foods, goal, totalMacros, date } = await req.json(); // Fixed missing ()
 
     const session = await DietarySession.findOne({ _id: sessionId, userId: decoded.id });
@@ -54,7 +54,7 @@ export async function DELETE(req: any, context: { params: { id: string } }) {
     if (!decoded) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     
     await dbConnect();
-    const sessionId = context.params.id;
+    const { id: sessionId } = await context.params; 
     const session = await DietarySession.findOne({ _id: sessionId, userId: decoded.id });
     if (!session) return NextResponse.json({ message: "Session not found or unauthorized" });
 

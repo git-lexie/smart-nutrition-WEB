@@ -1,9 +1,27 @@
 import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  firstName: { 
+    type: String, 
+    required: true 
+  },
+  middleName: { 
+    type: String, 
+    default: '' 
+  },
+  lastName: { 
+    type: String, 
+    required: true 
+  },
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true 
+  },
+  password: { 
+    type: String, 
+    required: true 
+  },
   profile: {
     age: String,
     gender: String,
@@ -15,6 +33,5 @@ const UserSchema = new mongoose.Schema({
     isProfileComplete: { type: Boolean, default: false }
   }
 });
-
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);

@@ -9,20 +9,25 @@ export async function POST(req: Request) {
     await dbConnect();
     
     // 2. Get Data
-    const { name, email, password } = await req.json();
+    const { firstName, middleName, lastName, email, password } = await req.json();
 
-    // 3. Check if user exists
+    // 3. Validate required name fields
+    if (!firstName?.trim() || !lastName?.trim()) {
+      return NextResponse.json({ message: "First name and last name are required." }, { status: 400 });
+    }
+
+    // 4. Check if user exists
     let user = await User.findOne({ email });
     if (user) {
       return NextResponse.json({ message: "User already exists with this email" }, { status: 400 });
     }
 
-    // 4. Hash Password
+    // 5. Hash Password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 5. Create User
-    user = await User.create({ name, email, password: hashedPassword });
+    // 6. Create User
+    user = await User.create({ firstName, middleName, lastName, email, password: hashedPassword });
     
     return NextResponse.json({ message: "User created successfully!" }, { status: 201 });
     

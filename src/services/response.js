@@ -418,4 +418,3 @@ export const generateExpertAdvice = (macros, userProfile, history = []) => {
         quote: quotes[Math.floor(Math.random() * quotes.length)]
     };
 };
-

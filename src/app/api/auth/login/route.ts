@@ -26,7 +26,14 @@ export async function POST(req: any) {
     
     await logUserAction(user._id, 'LOGIN', { email: user.email });
     
-    return NextResponse.json({ token, user: { id: user._id, name: user.name, email: user.email, profile: user.profile } });
+    return NextResponse.json({ token, user: { 
+      id: user._id, 
+      firstName: user.firstName,
+      middleName: user.middleName,
+      lastName: user.lastName,
+      email: user.email, 
+      profile: user.profile 
+    }});
   } catch (err) {
     return NextResponse.json({ message: "Server Error during login" }, { status: 500 });
   }
