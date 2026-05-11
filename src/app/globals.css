@@ -4,39 +4,43 @@
 @theme {
   --color-background-start: rgb(248, 250, 252);
   --color-background-end: rgb(255, 255, 255);
+  
 }
+@variant dark (&:where(.dark, .dark *));
 
-/* 2. Variable Definitions */
+/* 2. Light Mode Variables (Default) */
 :root {
-  --foreground-rgb: 15, 23, 42;
-  --background-start-rgb: 248, 250, 252;
-  --background-end-rgb: 255, 255, 255;
+  --foreground-rgb: 15, 23, 42; /* slate-900 */
+  --background-start-rgb: 248, 250, 252; /* slate-50 */
+  --background-end-rgb: 255, 255, 255; /* white */
 }
 
-/* 3. Manual Dark Mode Toggle Support */
+/* 3. Dark Mode Variables 
+   (Triggered when next-themes adds class="dark" to <html>) */
 .dark {
-  --foreground-rgb: 248, 250, 252;
-  --background-start-rgb: 15, 23, 42;
-  --background-end-rgb: 2, 6, 23;
+  --foreground-rgb: 248, 250, 252; /* slate-50 */
+  --background-start-rgb: 15, 23, 42; /* slate-900 */
+  --background-end-rgb: 2, 6, 23; /* slate-950 */
 }
 
 /* 4. Base Styles */
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     color: rgb(var(--foreground-rgb));
     background: linear-gradient(
-        to bottom,
-        rgb(var(--background-start-rgb)),
-        rgb(var(--background-end-rgb))
-      );
+      to bottom,
+      rgb(var(--background-start-rgb)),
+      rgb(var(--background-end-rgb))
+    );
     min-height: 100vh;
-    transition: background-color 0.3s ease, color 0.3s ease;
     overscroll-behavior-y: none;
-    font-family: var(--font-sans);
-  }
-
-  html {
-    scroll-behavior: smooth;
+    /* Note: Standard CSS linear-gradients don't transition smoothly. 
+       We handle the smooth fade using Tailwind transition classes 
+       on your main wrapper divs in the components instead. */
   }
 }
 
@@ -45,9 +49,10 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+  
   .no-scrollbar {
-    -ms-overflow-style: none; 
-    scrollbar-width: none; 
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   .animate-in {
@@ -68,13 +73,16 @@
 }
 
 /* 7. Glass Effect Utility */
-.glass-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
+@layer components {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
 
-.dark .glass-card {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  .dark .glass-card {
+    background: rgba(30, 41, 59, 0.7); /* slate-800 with opacity */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
 }

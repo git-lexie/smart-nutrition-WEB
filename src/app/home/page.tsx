@@ -9,8 +9,9 @@ import OnboardingModal from '@/components/OnboardingModal';
 import foodDatabase from '../data/foodDatabase'; 
 import { 
   User, Activity, Bluetooth, Plus, Trash2, Edit2,
-  Loader2, Sparkles, History, Dumbbell, ChevronRight, X, Timer, Zap, Mic, Volume2, Info
+  Loader2, Sparkles, History, Dumbbell, ChevronRight, X, Timer, Zap, Mic, Volume2, Info, Sun, Moon
 } from 'lucide-react';
+import { useTheme } from "next-themes";
 
 // --- HELPER: Speech Synthesis (AI Voice) ---
 const useSpeech = (gender: 'male' | 'female' = 'female') => {
@@ -58,7 +59,6 @@ const convertUnit = (val: number, targetUnit: string) => {
 };
 
 // --- HELPER: Generate "Alive" & Professional Speech Text ---
-// Updated to read detailed macros per item and sound like a real coach
 const generateAnalysisSpeech = (data: any, globalUnit: string, isHistory: boolean = false) => {
   let narrative = "";
 
@@ -78,24 +78,20 @@ const generateAnalysisSpeech = (data: any, globalUnit: string, isHistory: boolea
   if (data.foods && data.foods.length > 0) {
     narrative += "Here is the detailed nutritional breakdown. ";
     data.foods.forEach((f: any) => {
-       // FIX: Determine correct path for macros based on context (Live vs History)
        let dCalories = 0, dProtein = 0, dCarbs = 0, dFats = 0;
 
        if (f.macros) {
-          // Live Session Structure
           dCalories = f.macros.calories || 0;
           dProtein = f.macros.protein || 0;
           dCarbs = f.macros.carbs || 0;
           dFats = f.macros.fats || 0;
        } else {
-          // History/Saved Structure
           dCalories = f.calories || 0;
           dProtein = f.protein || 0;
           dCarbs = f.carbs || 0;
           dFats = f.fats || 0;
        }
 
-       // Conversational sentence for each item using the resolved variables
        narrative += `The ${f.name} contributes ${convertUnit(dCalories, globalUnit)} calories, providing ${convertUnit(dProtein, globalUnit)} protein, ${convertUnit(dCarbs, globalUnit)} carbs, and ${convertUnit(dFats, globalUnit)} fat. `;
     });
   }
@@ -105,7 +101,7 @@ const generateAnalysisSpeech = (data: any, globalUnit: string, isHistory: boolea
 
   // 5. Activity Recommendation
   if (data.recommendedActivity) narrative += `To optimize your metabolic rate, consider ${data.recommendedActivity.name} for ${data.recommendedActivity.duration}. `;
-  
+
   // 6. Goal-Based Suggestions
   if (data.recommendedFoods && data.recommendedFoods.length > 0) {
      const suggestions = data.recommendedFoods.slice(0, 3).map((f:any) => f.name).join(", ");
@@ -123,6 +119,14 @@ export default function HomePage() {
   const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState<string | null>(null);
   
+  // Theme logic
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
   // Voice State
   const [isListening, setIsListening] = useState(false);
 
@@ -132,11 +136,11 @@ export default function HomePage() {
   const [weight, setWeight] = useState<string>('');
   const [unit, setUnit] = useState<'g' | 'ml' | 'oz'>('g');
   const [aiResponse, setAiResponse] = useState<any>(null);
-  
+
   // Autocomplete State
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  
+
   // History & Editing State
   const [history, setHistory] = useState<any[]>([]);
   const [openSessionId, setOpenSessionId] = useState<string | null>(null);
@@ -154,7 +158,6 @@ export default function HomePage() {
   // --- 1. DATA PERSISTENCE & SYNC ---
   const fetchHistory = useCallback(async (authToken: string) => {
     try {
-      // const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       const res = await axios.get(`/api/user/history?limit=10`, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
@@ -164,17 +167,15 @@ export default function HomePage() {
     }
   }, []);
 
- const syncOfflineData = useCallback(async (authToken: string) => {
+  const syncOfflineData = useCallback(async (authToken: string) => {
     const offlineData = await getOfflineSessions(); 
     if (offlineData.length === 0) return;
 
     setIsSyncing(true);
     try {
-      // const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       await axios.post(`/api/user/sync`, { sessions: offlineData }, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
-      
       
       await clearSyncedSessions(offlineData.map((d: any) => d.id as number)); 
       await fetchHistory(authToken);
@@ -205,6 +206,7 @@ export default function HomePage() {
       setIsOffline(false);
       syncOfflineData(t);
     };
+    
     const handleOffline = () => {
       setIsOffline(true);
       speak("Connection lost. Switching to local storage.");
@@ -224,9 +226,8 @@ export default function HomePage() {
       const hasWelcomed = sessionStorage.getItem('hasWelcomed');
       if (!hasWelcomed) {
           const hour = new Date().getHours();
-          // Professional Time-based greeting
           const timeGreeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-          
+         
           setTimeout(() => {
             speak(`${timeGreeting}, ${user.name}. Your expert coach is ready. Please place an item on the scale to begin tracking.`);
             sessionStorage.setItem('hasWelcomed', 'true');
@@ -247,7 +248,7 @@ export default function HomePage() {
     recognition.lang = 'en-US';
     setIsListening(true);
     recognition.start();
-
+    
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       setFoodName(transcript); 
@@ -282,7 +283,8 @@ export default function HomePage() {
       pPct = 0.4; cPct = 0.3; fPct = 0.3;
     } else if (goal === 'Muscle Gain') {
       targetCals += 300;
-      pPct = 0.3; cPct = 0.5; fPct = 0.2;
+      pPct = 0.3; cPct = 0.5;
+      fPct = 0.2;
     }
 
     return {
@@ -359,7 +361,6 @@ export default function HomePage() {
   };
 
   const handleAddFood = () => {
-    // Smart Warning: Check for empty input
     if (!foodName || !weight) {
         speak("I cannot add that. Please identify the food and its weight first.");
         return;
@@ -368,8 +369,8 @@ export default function HomePage() {
     const w = parseFloat(weight);
     let weightInGrams = w;
     if (unit === 'oz') weightInGrams = w * 28.3495;
-    if (unit === 'ml') weightInGrams = w; 
-
+    if (unit === 'ml') weightInGrams = w;
+    
     const dbFood = foodDatabase.find((f: any) => f.name.toLowerCase() === foodName.toLowerCase());
     let itemMacros = { calories: 0, protein: 0, carbs: 0, fats: 0 };
     
@@ -388,7 +389,7 @@ export default function HomePage() {
       macros: itemMacros,
       isSaved: false
     }]);
-
+    
     speak(`Added ${w} ${unit} of ${foodName} to the plate.`);
     setFoodName('');
     setWeight('');
@@ -436,7 +437,6 @@ export default function HomePage() {
   const handleDeleteSession = async (id: string) => {
     if (!confirm("Are you sure you want to delete this session?")) return;
     try {
-      // const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       await axios.delete(`/api/user/session/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -450,20 +450,16 @@ export default function HomePage() {
   };
 
   const handleEditSession = (session: any) => {
-    setEditingSessionId(session._id || session.id); 
-    
+    setEditingSessionId(session._id || session.id);
     const hydratedFoods = session.foods.map((f: any) => {
       let itemMacros = { calories: 0, protein: 0, carbs: 0, fats: 0 };
       
-      // nested macros ONLY if they actually contain data (> 0)
       if (f.macros?.calories > 0) {
           itemMacros = { ...f.macros };
       } 
-      // root level macros ONLY if they actually contain data (> 0)
       else if (f.calories > 0) {
           itemMacros = { calories: f.calories, protein: f.protein, carbs: f.carbs, fats: f.fats };
       } 
-      // 3. If missing or 0, FORCE recalculation from the local foodDatabase
       else {
           const safeName = f.name?.trim().toLowerCase() || "";
           const dbFood = foodDatabase.find((dbF: any) => dbF.name.trim().toLowerCase() === safeName);
@@ -479,7 +475,6 @@ export default function HomePage() {
           }
       }
       
-      // Return the item with guaranteed macros attached to both standard locations
       return { 
         ...f, 
         macros: itemMacros, 
@@ -491,7 +486,7 @@ export default function HomePage() {
       };
     });
 
-    setFoodList(hydratedFoods); // Put the recalculated items on the plate
+    setFoodList(hydratedFoods);
     setOpenSessionId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     speak("Session loaded. You can now modify the items and save to update.");
@@ -499,8 +494,6 @@ export default function HomePage() {
 
   const runAIAnalysis = async () => {
     const unsavedFoods = foodList.filter(f => !f.isSaved);
-    
-    // Smart Warning: Check for empty plate
     if (foodList.length === 0 && unsavedFoods.length === 0) {
         speak("Your plate appears empty. Please add a food item so I can perform the analysis.");
         return;
@@ -509,10 +502,8 @@ export default function HomePage() {
     setLoadingAI(true);
     stop(); 
     speak("Processing meal composition. Please wait a moment.");
-
-    // --- UPDATED OFFLINE LOGIC ---
+    
     if (isOffline) {
-      // Map the state data to strictly match the MealLog interface in db.ts
       const offlineMealLog = {
         local_user_id: user?.id || user?._id || "guest", 
         timestamp: new Date().toISOString(),
@@ -524,10 +515,7 @@ export default function HomePage() {
       };
 
       try {
-        // Save using the correctly mapped object
-        await saveOfflineSession(offlineMealLog as any); 
-        
-        // Update UI state to mark items as saved locally
+        await saveOfflineSession(offlineMealLog as any);
         setFoodList(prev => prev.map(item => ({ ...item, isSaved: true })));
         setLoadingAI(false);
         if (editingSessionId) setEditingSessionId(null);
@@ -540,8 +528,6 @@ export default function HomePage() {
       return;
     }
 
-    // --- ONLINE LOGIC ---
-    // This is the payload structure your MongoDB API expects
     const sessionData = { 
       foods: foodList, 
       totalMacros: plateTotals,
@@ -550,9 +536,7 @@ export default function HomePage() {
     };
 
     try {
-      // const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       let response;
-      
       if (editingSessionId) {
         response = await axios.put(`/api/user/session/${editingSessionId}`, sessionData, {
           headers: { Authorization: `Bearer ${token}` }
@@ -565,11 +549,9 @@ export default function HomePage() {
       }
 
       setAiResponse({ ...response.data, foods: foodList, totalMacros: plateTotals });
-      
       await fetchHistory(token!);
       setFoodList(prev => prev.map(item => ({ ...item, isSaved: true })));
       
-      // Professional "Alive" Readout
       const speechText = generateAnalysisSpeech({ ...response.data, foods: foodList, totalMacros: plateTotals }, unit, false);
       speak(speechText);
 
@@ -586,8 +568,7 @@ export default function HomePage() {
         stop();
     } else {
         setOpenSessionId(session._id);
-        // Play same professional readout for Past History
-        const speechText = generateAnalysisSpeech(session, unit, true); 
+        const speechText = generateAnalysisSpeech(session, unit, true);
         speak(speechText);
     }
   };
@@ -597,10 +578,10 @@ export default function HomePage() {
     stop();
   };
 
-  if (!user) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-emerald-500" /></div>;
+  if (!user) return <div className="h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900"><Loader2 className="animate-spin text-emerald-500" /></div>;
 
   return (
-    <div className="min-h-screen bg-slate-900 pb-24 text-slate-200 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-24 text-slate-900 dark:text-slate-200 font-sans transition-colors duration-300">
       
       {/* Onboarding only for new users */}
       {!(user.isProfileComplete || user.profile?.isProfileComplete) && (
@@ -609,7 +590,7 @@ export default function HomePage() {
           onComplete={(upd: any) => {
             const updatedUser = { 
               ...user, 
-              profile: { ...upd, isProfileComplete: true }, // Added here to match backend
+              profile: { ...upd, isProfileComplete: true }, 
               isProfileComplete: true 
             };
             setUser(updatedUser);
@@ -619,19 +600,31 @@ export default function HomePage() {
         />
       )}
 
-      <nav className="bg-slate-800 px-6 py-4 shadow-sm flex justify-between items-center sticky top-0 z-20 border-b border-slate-700">
-        <div className="font-bold text-xl text-emerald-500 flex items-center gap-2 tracking-tight"><Activity size={24} /> SmartNutri</div>
+      <nav className="bg-white dark:bg-slate-800 px-6 py-4 shadow-sm flex justify-between items-center sticky top-0 z-20 border-b border-slate-200 dark:border-slate-700 transition-colors">
+        <div className="font-bold text-xl text-emerald-600 dark:text-emerald-500 flex items-center gap-2 tracking-tight"><Activity size={24} /> SmartNutri</div>
         <div className="flex items-center gap-2">
+
+          {/* Theme Toggle Button */}
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              aria-label="Toggle Theme"
+            >
+              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          )}
+
            <button 
             onClick={handleBluetoothConnect} 
-            className={`flex items-center gap-1 text-[10px] font-bold px-3 py-1.5 rounded-full hover:bg-slate-600 transition-all border ${
-              isBluetoothActive ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'bg-slate-700 border-slate-600 text-slate-400'
+            className={`flex items-center gap-1 text-[10px] font-bold px-3 py-1.5 rounded-full transition-all border ${
+              isBluetoothActive ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-500' : 'bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'
             }`}
           >
             <Bluetooth size={14} className={isBluetoothActive ? 'animate-pulse' : ''} />
             {isBluetoothActive ? 'SCALE LINKED' : 'LINK SCALE'}
           </button>
-          <button onClick={() => router.push('/profile')} className="p-2 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors"><User size={20} /></button>
+          <button onClick={() => router.push('/profile')} className="p-2 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-slate-600 dark:text-slate-200"><User size={20} /></button>
         </div>
       </nav>
 
@@ -640,38 +633,38 @@ export default function HomePage() {
         {/* HEADER / METRICS */}
         <header className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Hi, {user.name}</h1>
-            <p className="text-emerald-400 text-sm font-medium italic capitalize flex items-center gap-1">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Hi, {user.name}</h1>
+            <p className="text-emerald-600 dark:text-emerald-400 text-sm font-medium italic capitalize flex items-center gap-1">
               Target: {user.profile?.goal?.replace('_', ' ') || "Maintenance"}
             </p>
-            {isOffline && <span className="text-rose-400 text-xs mt-1 block flex items-center gap-1 font-bold"><Volume2 size={12}/> OFFLINE MODE</span>}
-            {isSyncing && <span className="text-emerald-400 text-xs mt-1 block flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Syncing...</span>}
+            {isOffline && <span className="text-rose-500 dark:text-rose-400 text-xs mt-1 block flex items-center gap-1 font-bold"><Volume2 size={12}/> OFFLINE MODE</span>}
+            {isSyncing && <span className="text-emerald-600 dark:text-emerald-400 text-xs mt-1 block flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Syncing...</span>}
           </div>
           
           <div className="flex flex-col items-end">
-            <span className="text-[#00ffa3] font-bold text-xs mb-2 uppercase tracking-widest opacity-80">Remaining Daily Targets</span>
+            <span className="text-emerald-600 dark:text-[#00ffa3] font-bold text-xs mb-2 uppercase tracking-widest opacity-80">Remaining Daily Targets</span>
             <div className="flex gap-2">
-              <div className="bg-[#111827] px-3 py-1.5 rounded-xl border border-slate-800 flex flex-col items-center min-w-[44px]">
+              <div className="bg-white dark:bg-[#111827] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center min-w-[44px]">
                 <span className="text-[8px] uppercase font-bold text-slate-500 mb-0.5">Calo</span>
-                <span className="text-[#00ffa3] font-bold text-xs">{convertUnit(remainingMacros.calories, unit)}{unit}</span>
+                <span className="text-emerald-600 dark:text-[#00ffa3] font-bold text-xs">{convertUnit(remainingMacros.calories, unit)}{unit}</span>
               </div>
-              <div className="bg-[#111827] px-3 py-1.5 rounded-xl border border-slate-800 flex flex-col items-center min-w-[44px]">
+              <div className="bg-white dark:bg-[#111827] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center min-w-[44px]">
                 <span className="text-[8px] uppercase font-bold text-slate-500 mb-0.5">Prot</span>
-                <span className="text-[#3b82f6] font-bold text-xs">{convertUnit(remainingMacros.protein, unit)}{unit}</span>
+                <span className="text-blue-600 dark:text-[#3b82f6] font-bold text-xs">{convertUnit(remainingMacros.protein, unit)}{unit}</span>
               </div>
-              <div className="bg-[#111827] px-3 py-1.5 rounded-xl border border-slate-800 flex flex-col items-center min-w-[44px]">
+              <div className="bg-white dark:bg-[#111827] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center min-w-[44px]">
                 <span className="text-[8px] uppercase font-bold text-slate-500 mb-0.5">Carb</span>
-                <span className="text-[#f59e0b] font-bold text-xs">{convertUnit(remainingMacros.carbs, unit)}{unit}</span>
+                <span className="text-amber-600 dark:text-[#f59e0b] font-bold text-xs">{convertUnit(remainingMacros.carbs, unit)}{unit}</span>
               </div>
-              <div className="bg-[#111827] px-3 py-1.5 rounded-xl border border-slate-800 flex flex-col items-center min-w-[44px]">
+              <div className="bg-white dark:bg-[#111827] px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col items-center min-w-[44px]">
                 <span className="text-[8px] uppercase font-bold text-slate-500 mb-0.5">Fat</span>
-                <span className="text-[#f43f5e] font-bold text-xs">{convertUnit(remainingMacros.fats, unit)}{unit}</span>
+                <span className="text-rose-600 dark:text-[#f43f5e] font-bold text-xs">{convertUnit(remainingMacros.fats, unit)}{unit}</span>
               </div>
             </div>
           </div>
         </header>
 
-        <section className="bg-slate-800 rounded-3xl p-6 shadow-xl border border-slate-700">
+        <section className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl border border-slate-200 dark:border-slate-700 transition-colors">
           <div className="relative mb-4">
             <input 
               value={foodName} 
@@ -679,26 +672,26 @@ export default function HomePage() {
               onFocus={() => foodName.trim().length > 0 && setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               placeholder="What's on the plate?" 
-              className="w-full p-4 pr-12 rounded-2xl bg-slate-900 text-white outline-none focus:ring-2 focus:ring-emerald-500 border border-slate-700 placeholder:text-slate-500" 
+              className="w-full p-4 pr-12 rounded-2xl bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500 border border-slate-200 dark:border-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-colors" 
             />
             <button 
                 onClick={handleVoiceInput}
-                className={`absolute right-3 top-3 p-2 rounded-full transition-all ${isListening ? 'bg-red-500/20 text-red-500 animate-pulse' : 'text-slate-400 hover:text-emerald-500'}`}
+                className={`absolute right-3 top-3 p-2 rounded-full transition-all ${isListening ? 'bg-red-50 dark:bg-red-500/20 text-red-500 animate-pulse' : 'text-slate-400 hover:text-emerald-500'}`}
             >
                 <Mic size={20} />
             </button>
 
             {showSuggestions && suggestions.length > 0 && (
-              <ul className="absolute z-10 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto overflow-hidden">
+              <ul className="absolute z-10 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto overflow-hidden">
                 {suggestions.map((item, idx) => (
                   <li 
                     key={idx} 
                     onClick={() => handleSuggestionClick(item.name)}
-                    className="px-4 py-3 hover:bg-slate-700 cursor-pointer text-sm text-slate-200 border-b border-slate-700/50 last:border-0 flex justify-between items-center transition-colors"
+                    className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer text-sm text-slate-700 dark:text-slate-200 border-b border-slate-100 dark:border-slate-700/50 last:border-0 flex justify-between items-center transition-colors"
                   >
                     <span className="capitalize font-medium">{item.name}</span>
                     {item.macros && (
-                      <span className="text-[10px] text-emerald-500 font-mono bg-emerald-500/10 px-2 py-1 rounded-md">
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-500 font-mono bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-md">
                         {item.macros.calories} kcal / 100g
                       </span>
                     )}
@@ -715,15 +708,15 @@ export default function HomePage() {
                 value={weight} 
                 onChange={(e) => setWeight(e.target.value)} 
                 placeholder="0" 
-                className="w-full p-4 rounded-2xl bg-slate-900 text-white outline-none border border-slate-700 focus:ring-2 focus:ring-emerald-500 text-lg font-bold" 
+                className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-emerald-500 text-lg font-bold transition-colors" 
               />
-              {isBluetoothActive && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-emerald-500 font-bold bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">LIVE</span>}
+              {isBluetoothActive && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-emerald-600 dark:text-emerald-500 font-bold bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded border border-emerald-200 dark:border-emerald-500/20">LIVE</span>}
             </div>
             <div className="relative">
               <select 
                 value={unit} 
                 onChange={handleUnitChange} 
-                className="w-20 h-full bg-emerald-700 hover:bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg font-bold text-sm transition-all uppercase appearance-none text-center outline-none cursor-pointer"
+                className="w-20 h-full bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-500 dark:hover:bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg font-bold text-sm transition-all uppercase appearance-none text-center outline-none cursor-pointer" 
               >
                 <option value="g">G</option>
                 <option value="ml">ML</option>
@@ -735,45 +728,45 @@ export default function HomePage() {
             </div>
             <button onClick={handleAddFood} className="w-16 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-all"><Plus size={24} /></button>
           </div>
-
+          
           {currentInputMacros && (
-            <div className="flex justify-between items-center text-xs font-mono font-bold bg-slate-900/50 p-3 rounded-xl border border-slate-700">
-              <span className="text-slate-400 text-[10px] uppercase">Input Macros:</span>
+            <div className="flex justify-between items-center text-xs font-mono font-bold bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="text-slate-500 dark:text-slate-400 text-[10px] uppercase">Input Macros:</span>
               <div className="flex gap-3">
-                <span className="text-[#00ffa3]">{convertUnit(currentInputMacros.calories, unit)}{unit}</span>
-                <span className="text-[#3b82f6]">{convertUnit(currentInputMacros.protein, unit)}{unit}</span>
-                <span className="text-[#f59e0b]">{convertUnit(currentInputMacros.carbs, unit)}{unit}</span>
-                <span className="text-[#f43f5e]">{convertUnit(currentInputMacros.fats, unit)}{unit}</span>
+                <span className="text-emerald-600 dark:text-[#00ffa3]">{convertUnit(currentInputMacros.calories, unit)}{unit}</span>
+                <span className="text-blue-600 dark:text-[#3b82f6]">{convertUnit(currentInputMacros.protein, unit)}{unit}</span>
+                <span className="text-amber-600 dark:text-[#f59e0b]">{convertUnit(currentInputMacros.carbs, unit)}{unit}</span>
+                <span className="text-rose-600 dark:text-[#f43f5e]">{convertUnit(currentInputMacros.fats, unit)}{unit}</span>
               </div>
             </div>
           )}
         </section>
 
-        <section className="bg-slate-800 rounded-3xl p-6 shadow-lg border border-slate-700">
+        <section className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 transition-colors">
           <div className="flex justify-between items-center mb-4">
-             <h3 className="font-bold text-white flex items-center gap-2 text-sm uppercase tracking-wider"><History size={16} className="text-emerald-500" /> Current Plate</h3>
-             {foodList.some(f => f.isSaved) && <span className="text-[10px] text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded border border-emerald-400/20">Saved Items Visible</span>}
+            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wider"><History size={16} className="text-emerald-600 dark:text-emerald-500" /> Current Plate</h3>
+            {foodList.some(f => f.isSaved) && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-400/10 px-2 py-1 rounded border border-emerald-200 dark:border-emerald-400/20">Saved Items Visible</span>}
           </div>
           
           <ul className="space-y-3 mb-6">
             {foodList.length === 0 && <p className="text-slate-500 text-xs italic text-center py-4">Your plate is empty.</p>}
             {foodList.map((item, idx) => (
-              <li key={idx} className={`flex justify-between items-start text-sm p-3 rounded-xl border ${item.isSaved ? 'bg-slate-900/30 border-slate-700/30 text-slate-400 opacity-80' : 'bg-slate-900/50 border-slate-700/50 text-slate-300'}`}>
+              <li key={idx} className={`flex justify-between items-start text-sm p-3 rounded-xl border transition-colors ${item.isSaved ? 'bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700/30 text-slate-500 dark:text-slate-400 opacity-80' : 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 shadow-sm'}`}>
                 <div className="w-full">
                   <div className="flex justify-between w-full mb-1">
-                     <span className={`capitalize font-bold text-base ${item.isSaved ? 'text-slate-400' : 'text-white'}`}>
-                       {item.name} <span className="text-slate-400 font-normal text-sm">({convertUnit(item.weight, unit)}{unit})</span>
-                     </span>
-                     <button onClick={() => {
+                    <span className={`capitalize font-bold text-base ${item.isSaved ? 'text-slate-500 dark:text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+                      {item.name} <span className="text-slate-400 font-normal text-sm">({convertUnit(item.weight, unit)}{unit})</span>
+                    </span>
+                    <button onClick={() => {
                         setFoodList(foodList.filter((_, i) => i !== idx));
                         speak(`Removed ${item.name} from the plate.`);
-                     }}><Trash2 size={16} className="text-rose-400 hover:text-rose-300 transition-colors" /></button>
+                    }}><Trash2 size={16} className="text-rose-500 dark:text-rose-400 hover:text-rose-400 dark:hover:text-rose-300 transition-colors" /></button>
                   </div>
-                  <div className="gap-3 text-xs text-slate-400 font-mono mt-2 bg-slate-800/50 p-2 rounded-lg inline-flex flex-wrap border border-slate-700/50">
-                    <span className="text-emerald-400 font-semibold">Cals: {convertUnit(item.macros?.calories ?? item.calories ?? 0, unit)}</span>
-                    <span className="text-blue-400">Prot: {convertUnit(item.macros?.protein ?? item.protein ?? 0, unit)}</span>
-                    <span className="text-amber-400">Carb: {convertUnit(item.macros?.carbs ?? item.carbs ?? 0, unit)}</span>
-                    <span className="text-rose-400">Fat: {convertUnit(item.macros?.fats ?? item.fats ?? 0, unit)}</span>
+                  <div className="gap-3 text-xs text-slate-500 dark:text-slate-400 font-mono mt-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg inline-flex flex-wrap border border-slate-100 dark:border-slate-700/50">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Cals: {convertUnit(item.macros?.calories ?? item.calories ?? 0, unit)}</span>
+                    <span className="text-blue-600 dark:text-blue-400">Prot: {convertUnit(item.macros?.protein ?? item.protein ?? 0, unit)}</span>
+                    <span className="text-amber-600 dark:text-amber-400">Carb: {convertUnit(item.macros?.carbs ?? item.carbs ?? 0, unit)}</span>
+                    <span className="text-rose-600 dark:text-rose-400">Fat: {convertUnit(item.macros?.fats ?? item.fats ?? 0, unit)}</span>
                   </div>
                 </div>
               </li>
@@ -781,53 +774,54 @@ export default function HomePage() {
           </ul>
 
           {foodList.length > 0 && (
-            <div className="mb-6 p-4 bg-[#111827] rounded-xl border border-slate-700 flex flex-col gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase border-b border-slate-700 pb-2">Total Food Macros (On Plate)</span>
+            <div className="mb-6 p-4 bg-slate-50 dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-2 transition-colors">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-700 pb-2">Total Food Macros (On Plate)</span>
               <div className="flex justify-between items-center text-sm font-mono font-bold pt-1">
-                <span className="text-[#00ffa3]">Cals: {convertUnit(plateTotals.calories, unit)}{unit}</span>
-                <span className="text-[#3b82f6]">Prot: {convertUnit(plateTotals.protein, unit)}{unit}</span>
-                <span className="text-[#f59e0b]">Carb: {convertUnit(plateTotals.carbs, unit)}{unit}</span>
-                <span className="text-[#f43f5e]">Fat: {convertUnit(plateTotals.fats, unit)}{unit}</span>
+                <span className="text-emerald-600 dark:text-[#00ffa3]">Cals: {convertUnit(plateTotals.calories, unit)}{unit}</span>
+                <span className="text-blue-600 dark:text-[#3b82f6]">Prot: {convertUnit(plateTotals.protein, unit)}{unit}</span>
+                <span className="text-amber-600 dark:text-[#f59e0b]">Carb: {convertUnit(plateTotals.carbs, unit)}{unit}</span>
+                <span className="text-rose-600 dark:text-[#f43f5e]">Fat: {convertUnit(plateTotals.fats, unit)}{unit}</span>
               </div>
             </div>
           )}
 
           <button 
-              onClick={runAIAnalysis} 
-              disabled={loadingAI}
-              className="w-full bg-[#00ffa3] hover:bg-[#00e693] text-slate-900 py-4 rounded-2xl font-black flex justify-center items-center gap-2 mt-6 transition-all shadow-[0_0_20px_rgba(0,255,163,0.3)] hover:shadow-[0_0_30px_rgba(0,255,163,0.5)] text-lg uppercase tracking-wider"
-            >
-              {loadingAI ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />}
-              {editingSessionId ? "Update Meal Session" : "Analyze & Save Meal"}
-            </button>
-            
-            {editingSessionId && (
-              <button 
-                onClick={() => {
-                  setEditingSessionId(null);
-                  setFoodList([]); 
-                  speak("Editing cancelled.");
-                }}
-                className="w-full mt-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3.5 rounded-2xl font-bold transition-all text-sm uppercase tracking-wide"
-              >
+            onClick={runAIAnalysis} 
+            disabled={loadingAI} 
+            className="w-full bg-emerald-500 dark:bg-[#00ffa3] hover:bg-emerald-600 dark:hover:bg-[#00e693] text-white dark:text-slate-900 py-4 rounded-2xl font-black flex justify-center items-center gap-2 mt-6 transition-all shadow-lg dark:shadow-[0_0_20px_rgba(0,255,163,0.3)] hover:shadow-xl dark:hover:shadow-[0_0_30px_rgba(0,255,163,0.5)] text-lg uppercase tracking-wider"
+          >
+            {loadingAI ? <Loader2 className="animate-spin" /> : <Sparkles size={20} />}
+            {editingSessionId ? "Update Meal Session" : "Analyze & Save Meal"}
+          </button>
+          
+          {editingSessionId && (
+             <button 
+                onClick={() => { setEditingSessionId(null); setFoodList([]); speak("Editing cancelled."); }} 
+                className="w-full mt-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-white py-3.5 rounded-2xl font-bold transition-all text-sm uppercase tracking-wide"
+             >
                 Cancel Editing
-              </button>
-            )}
+             </button>
+          )}
         </section>
 
-        {/* LIVE ANALYSIS */}
+        {/* LIVE ANALYSIS - (Assuming ReportCard handles its own dark mode classes) */}
         {aiResponse && (
-            <div className="animate-in slide-in-from-bottom-5">
-                <ReportCard data={aiResponse} globalUnit={unit} isHistory={false} onClose={() => { setAiResponse(null); stop(); }} />
-            </div>
+          <div className="animate-in slide-in-from-bottom-5">
+             <ReportCard 
+                data={aiResponse} 
+                globalUnit={unit} 
+                isHistory={false} 
+                onClose={() => { setAiResponse(null); stop(); }} 
+             />
+          </div>
         )}
 
         {/* RECENT SESSIONS SECTION */}
-        <section className="space-y-4 pt-4 border-t border-slate-800">
+        <section className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
           <div className="flex justify-between items-center px-2">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Recent Activity</h3>
             {openSessionId && (
-              <button onClick={closeHistory} className="text-[10px] text-emerald-500 font-bold flex items-center gap-1 hover:text-emerald-400">
+              <button onClick={closeHistory} className="text-[10px] text-emerald-600 dark:text-emerald-500 font-bold flex items-center gap-1 hover:text-emerald-500 dark:hover:text-emerald-400">
                 <X size={12}/> STOP & CLOSE
               </button>
             )}
@@ -838,34 +832,35 @@ export default function HomePage() {
               <div key={session._id || i} className="space-y-3">
                 <button 
                   onClick={() => handleHistoryClick(session)} 
-                  className={`w-full p-4 rounded-2xl border transition-all flex justify-between items-center ${
-                    openSessionId === session._id ? 'bg-slate-700 border-emerald-500/50' : 'bg-slate-800 border-slate-700 hover:border-slate-500'
-                  }`}
+                  className={`w-full p-4 rounded-2xl border transition-all flex justify-between items-center ${ openSessionId === session._id ? 'bg-slate-100 dark:bg-slate-700 border-emerald-500/50' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500 shadow-sm' }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-900 rounded-lg text-emerald-500"><History size={18}/></div>
+                    <div className="p-2 bg-slate-50 dark:bg-slate-900 rounded-lg text-emerald-600 dark:text-emerald-500"><History size={18}/></div>
                     <div className="text-left">
-                      <p className="text-sm font-bold text-white">{new Date(session.createdAt).toLocaleDateString()} • {new Date(session.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                      <p className="text-xs text-slate-400">{session.foods?.length} items • {Math.round(session.macros?.calories || session.totalMacros?.calories || 0)} kcal</p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white">{new Date(session.createdAt).toLocaleDateString()} • {new Date(session.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{session.foods?.length} items • {Math.round(session.macros?.calories || session.totalMacros?.calories || 0)} kcal</p>
                     </div>
                   </div>
                   {/* Playing Indicator */}
-                  {openSessionId === session._id ? (
-                      <Volume2 size={18} className="text-emerald-400 animate-pulse" />
-                  ) : (
-                      <ChevronRight size={18} className="text-slate-500" />
-                  )}
+                  {openSessionId === session._id ? ( <Volume2 size={20} className="text-emerald-600 dark:text-emerald-500 animate-pulse"/> ) : ( <ChevronRight size={20} className="text-slate-400"/> )}
                 </button>
-
+                
                 {openSessionId === session._id && (
-                  <div className="animate-in zoom-in-95 duration-300">
-                    <ReportCard data={session} globalUnit={unit} isHistory={true} onEdit={handleEditSession} onDelete={handleDeleteSession} onClose={closeHistory} />
+                  <div className="animate-in slide-in-from-top-2">
+                     <ReportCard 
+                        data={session} 
+                        globalUnit={unit} 
+                        isHistory={true} 
+                        onEdit={() => handleEditSession(session)} 
+                        onDelete={() => handleDeleteSession(session._id)}
+                     />
                   </div>
                 )}
               </div>
             ))}
           </div>
         </section>
+
       </main>
     </div>
   );
