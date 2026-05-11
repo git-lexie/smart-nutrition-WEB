@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Activity, Bluetooth, Brain, ChevronRight, Scale } from 'lucide-react';
+import { Activity, Bluetooth, Brain, ChevronRight, Scale, Sun, Moon } from 'lucide-react';
+import { useTheme } from "next-themes";
 
 export default function LandingPage() {
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  // Auto-redirect logic
+  // Auto-redirect and Hydration logic
   useEffect(() => {
+    setMounted(true); // Ensures the theme toggle only renders on the client
     const token = localStorage.getItem('token');
     if (token) {
       router.push('/home');
@@ -25,25 +29,31 @@ export default function LandingPage() {
           <Activity className="h-6 w-6" />
           <span>SmartNutri</span>
         </div>
-        <Link 
-          href="/login" 
-          className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-        >
-          Login
-        </Link>
+        
+        <div className="flex items-center gap-6">
+          {/* Theme Toggle Button */}
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              aria-label="Toggle Theme"
+            >
+              {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          )}
+
+          <Link 
+            href="/login" 
+            className="text-slate-600 dark:text-slate-300 font-medium hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+          >
+            Login
+          </Link>
+        </div>
       </nav>
 
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto w-full py-12">
         
-        {/* <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-4 py-1.5 rounded-full text-sm font-semibold mb-6 inline-flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          New: Gemini AI Integration
-        </div> */}
-
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6">
           Your Personal <br />
           <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-600 to-teal-500">

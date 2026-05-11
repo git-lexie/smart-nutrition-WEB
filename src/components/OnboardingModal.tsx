@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Volume2, Check, Ruler, Scale, User, Activity } from 'lucide-react';
+import { Volume2, Check, Ruler, Scale, User, Activity, Sun, Moon } from 'lucide-react';
+import { useTheme } from "next-themes";
 
 interface OnboardingProps {
   token: string | null;
@@ -21,6 +22,14 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
     voiceGender: 'female' // Default AI Voice
   });
   const [loading, setLoading] = useState(false);
+  
+  // Theme logic
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,12 +51,24 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-      <div className="bg-[#1e293b] border border-slate-700 rounded-3xl w-full max-w-md p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-200/50 dark:bg-black/90 backdrop-blur-md p-4 transition-colors">
+      
+      {/* Theme Toggle Button */}
+      {mounted && (
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="absolute top-6 right-6 p-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors z-[60]"
+          aria-label="Toggle Theme"
+        >
+          {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      )}
+
+      <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 rounded-3xl w-full max-w-md p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-300">
         
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Welcome</h2>
-          <p className="text-slate-400 text-sm">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">Welcome</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">
             Let's calibrate your AI Nutrition Coach.
           </p>
         </div>
@@ -57,21 +78,21 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
           {/* Row 1: Age & Gender */}
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
-               <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1"><User size={12}/> Age</label>
+               <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1"><User size={12}/> Age</label>
                <input 
                  type="number" required 
                  value={formData.age}
                  onChange={(e) => setFormData({...formData, age: e.target.value})}
-                 className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-600"
+                 className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
                  placeholder="Years"
                />
              </div>
              <div className="space-y-2">
-               <label className="text-[10px] font-bold text-slate-500 uppercase">Gender</label>
+               <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Gender</label>
                <select 
                  value={formData.gender}
                  onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                 className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-white outline-none cursor-pointer"
+                 className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white outline-none cursor-pointer"
                >
                  <option>Male</option>
                  <option>Female</option>
@@ -82,22 +103,22 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
           {/* Row 2: Height & Weight */}
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
-               <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1"><Ruler size={12}/> Height</label>
+               <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1"><Ruler size={12}/> Height</label>
                <input 
                  type="number" required 
                  value={formData.height}
                  onChange={(e) => setFormData({...formData, height: e.target.value})}
-                 className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                 className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
                  placeholder="cm"
                />
              </div>
              <div className="space-y-2">
-               <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1"><Scale size={12}/> Weight</label>
+               <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1"><Scale size={12}/> Weight</label>
                <input 
                  type="number" required 
                  value={formData.weight}
                  onChange={(e) => setFormData({...formData, weight: e.target.value})}
-                 className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                 className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
                  placeholder="kg"
                />
              </div>
@@ -105,7 +126,7 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
 
           {/* Row 3: Goal */}
           <div className="space-y-2">
-             <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1"><Activity size={12}/> Primary Goal</label>
+             <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1"><Activity size={12}/> Primary Goal</label>
              <div className="grid grid-cols-3 gap-2">
                 {['Weight Loss', 'Maintenance', 'Muscle Gain'].map(goal => (
                   <button
@@ -114,8 +135,8 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
                     onClick={() => setFormData({...formData, goal})}
                     className={`p-2 rounded-xl text-[10px] font-bold border transition-all ${
                       formData.goal === goal 
-                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' 
-                      : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:bg-slate-800'
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' 
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
                     }`}
                   >
                     {goal}
@@ -125,8 +146,8 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
           </div>
 
           {/* Row 4: AI Voice Selection */}
-          <div className="space-y-2 pt-2 border-t border-slate-800">
-             <label className="text-[10px] font-bold text-emerald-500 uppercase flex items-center gap-2">
+          <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+             <label className="text-[10px] font-bold text-emerald-600 dark:text-emerald-500 uppercase flex items-center gap-2">
                 <Volume2 size={12} /> Select AI Coach Voice
              </label>
              <div className="flex gap-4">
@@ -137,8 +158,8 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
                      onClick={() => setFormData({...formData, voiceGender: v.toLowerCase()})}
                      className={`flex-1 p-3 rounded-xl border transition-all flex items-center justify-center gap-2 ${
                        formData.voiceGender === v.toLowerCase()
-                       ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20' 
-                       : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'
+                       ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-500/20' 
+                       : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                      }`}
                    >
                      <span className="text-sm font-bold">{v}</span>

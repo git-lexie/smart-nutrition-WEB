@@ -1,9 +1,10 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, Sun, Moon } from 'lucide-react';
+import { useTheme } from "next-themes";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +12,12 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +33,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 p-4 relative">
+      
+      {/* Theme Toggle Button placed in top right */}
+      {mounted && (
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="absolute top-6 right-6 p-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          aria-label="Toggle Theme"
+        >
+          {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      )}
+
       <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden">
         <div className="bg-emerald-600 p-6 text-center text-white">
           <h1 className="text-3xl font-bold">SmartNutri</h1>
@@ -37,21 +56,21 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-3.5 text-slate-400" size={20} />
-              <input type="email" placeholder="Email" required className="w-full pl-10 p-3 border rounded-lg dark:bg-slate-700 dark:text-white" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+              <input type="email" placeholder="Email" required className="w-full pl-10 p-3 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-3.5 text-slate-400" size={20} />
-              <input type={showPassword ? "text" : "password"} placeholder="Password" required className="w-full pl-10 pr-10 p-3 border rounded-lg dark:bg-slate-700 dark:text-white" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+              <input type={showPassword ? "text" : "password"} placeholder="Password" required className="w-full pl-10 pr-10 p-3 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-slate-400">
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            <button type="submit" disabled={loading} className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700 disabled:opacity-50">
+            <button type="submit" disabled={loading} className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700 disabled:opacity-50 transition-colors">
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
-          <div className="mt-6 text-center text-sm">
-            No account? <Link href="/signup" className="text-emerald-600 font-bold">Sign up</Link>
+          <div className="mt-6 text-center text-sm dark:text-slate-400">
+            No account? <Link href="/signup" className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">Sign up</Link>
           </div>
         </div>
       </div>

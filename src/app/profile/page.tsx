@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { ArrowLeft, Save, LogOut, Volume2 } from 'lucide-react'; // Added Volume2 icon
+import { ArrowLeft, Save, LogOut, Volume2, Sun, Moon } from 'lucide-react'; // Added Sun, Moon
+import { useTheme } from "next-themes";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -23,6 +24,14 @@ export default function ProfilePage() {
   
   const [token, setToken] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Theme logic
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const t = localStorage.getItem('token');
@@ -108,7 +117,19 @@ export default function ProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 transition-colors duration-300 relative">
+      
+      {/* Theme Toggle Button placed in top right */}
+      {mounted && (
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="absolute top-6 right-6 p-2 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors z-50"
+          aria-label="Toggle Theme"
+        >
+          {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      )}
+
       <div className="max-w-md mx-auto bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700">
         
         {/* Header */}
