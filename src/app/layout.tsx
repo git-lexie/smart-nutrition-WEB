@@ -5,13 +5,16 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SmartNutri IoT",
+  title: {
+    default: "NutriAI",
+    template: "NutriAI | %s",
+  },
   description: "AI Nutrition Coach",
   manifest: "/manifest.json", // Link to the manifest
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "SmartNutri",
+    title: "NutriAI",
   },
 };
 

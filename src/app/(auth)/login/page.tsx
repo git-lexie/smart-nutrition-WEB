@@ -29,7 +29,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 p-4">
       <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden">
         <div className="bg-emerald-600 p-6 text-center text-white">
-          <h1 className="text-3xl font-bold">SmartNutri</h1>
+          <h1 className="text-3xl font-bold">NutriAI</h1>
           <p>Login to your AI Coach</p>
         </div>
         <div className="p-8">

@@ -23,7 +23,7 @@ export default function LandingPage() {
       <nav className="p-6 flex justify-between items-center max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-2 font-bold text-xl text-emerald-600 dark:text-emerald-400">
           <Activity className="h-6 w-6" />
-          <span>SmartNutri</span>
+          <span>NutriAI</span>
         </div>
         <Link 
           href="/login" 
@@ -93,7 +93,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="p-6 text-center text-slate-400 text-sm">
-        © {new Date().getFullYear()} SmartNutri. Build for Your Need
+        © {new Date().getFullYear()} NutriAI. Build for Your Need
       </footer>
     </div>
   );
