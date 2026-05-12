@@ -620,7 +620,7 @@ export default function HomePage() {
       )}
 
       <nav className="bg-slate-800 px-6 py-4 shadow-sm flex justify-between items-center sticky top-0 z-20 border-b border-slate-700">
-        <div className="font-bold text-xl text-emerald-500 flex items-center gap-2 tracking-tight"><Activity size={24} /> SmartNutri</div>
+        <div className="font-bold text-xl text-emerald-500 flex items-center gap-2 tracking-tight"><Activity size={24} /> NutriAI</div>
         <div className="flex items-center gap-2">
            <button 
             onClick={handleBluetoothConnect} 

@@ -1,6 +1,6 @@
 {
-  "name": "SmartNutri IoT Coach",
-  "short_name": "SmartNutri",
+  "name": "NutriAI IoT Coach",
+  "short_name": "NutriAI",
   "description": "AI-powered Nutrition Coach with IoT Scale Integration",
   "start_url": "/home",
   "display": "standalone",
