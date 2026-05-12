@@ -15,10 +15,10 @@ export default function ProfilePage() {
     age: '',
     height: '',
     weight: '',
-    gender: 'Other',
+    sex: 'Other',
     activityLevel: 'Sedentary (office job)',
     goal: 'Maintenance',
-    voiceGender: 'female' // NEW: Added Voice Preference state
+    voiceSex: 'female' // NEW: Added Voice Preference state
   });
   
   const [token, setToken] = useState('');
@@ -42,10 +42,10 @@ export default function ProfilePage() {
       age: u.profile?.age || '',
       height: u.profile?.height || '',
       weight: u.profile?.weight || '',
-      gender: u.profile?.gender || 'Other',
+      sex: u.profile?.sex || 'Other',
       activityLevel: u.profile?.activityLevel || 'Sedentary (office job)',
       goal: u.profile?.goal || 'Maintenance',
-      voiceGender: u.profile?.voiceGender || 'female' // NEW: Hydrate Voice Preference
+      voiceSex: u.profile?.voiceSex || 'female' // NEW: Hydrate Voice Preference
     });
   }, [router]);
 
@@ -78,9 +78,9 @@ export default function ProfilePage() {
         const utterance = new SpeechSynthesisUtterance("Profile settings updated.");
         const voices = window.speechSynthesis.getVoices();
         const preferredVoice = voices.find(v => 
-          data.voiceGender === 'male' 
-            ? (v.name.includes('Male') || v.name.includes('David')) 
-            : (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Google US'))
+              data.voiceSex === 'male' 
+                ? (v.name.includes('Male') || v.name.includes('David')) 
+                : (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Google US'))
         );
         if (preferredVoice) utterance.voice = preferredVoice;
         window.speechSynthesis.speak(utterance);
@@ -98,7 +98,7 @@ export default function ProfilePage() {
   };
 
   const goals = ['Weight Loss', 'Maintenance', 'Muscle Gain'];
-  const genders = ['Male', 'Female', 'Other'];
+  const sexes = ['Male', 'Female', 'Other'];
   const activityLevels = [
     'Sedentary (office job)',
     'Light Exercise (1-2 days/week)',
@@ -140,9 +140,9 @@ export default function ProfilePage() {
                  <button
                    key={v}
                    type="button"
-                   onClick={() => setData({ ...data, voiceGender: v.toLowerCase() })}
+                   onClick={() => setData({ ...data, voiceSex: v.toLowerCase() })}
                    className={`flex-1 py-2 text-sm rounded-xl border transition-all ${
-                     data.voiceGender === v.toLowerCase()
+                     data.voiceSex === v.toLowerCase()
                      ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/30'
                      : 'border-slate-200 dark:border-slate-700 dark:text-slate-300'
                    }`}
@@ -169,17 +169,17 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Gender Selection */}
+          {/* Sex Selection */}
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Gender</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Sex</label>
             <div className="flex gap-2">
-              {genders.map((g) => (
+              {sexes.map((g) => (
                 <button
                   key={g}
                   type="button"
-                  onClick={() => setData({ ...data, gender: g })}
+                  onClick={() => setData({ ...data, sex: g })}
                   className={`flex-1 py-2 text-sm rounded-xl border transition-all ${
-                    data.gender === g 
+                    data.sex === g 
                     ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
                     : 'border-slate-200 dark:border-slate-700 dark:text-slate-300'
                   }`}

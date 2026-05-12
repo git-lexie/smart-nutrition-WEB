@@ -2,11 +2,11 @@ import internalFoodDb from '../app/data/foodDatabase';
 
 export const generateExpertAdvice = (macros, userProfile, history = []) => {
     const {
-        age = 25, gender = 'Male', height = 170, weight = 70, goal = 'maintain'
+        age = 25, sex = 'Male', height = 170, weight = 70, goal = 'maintain'
     } = userProfile;
 
     let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-    bmr = (gender.toLowerCase() === 'male') ? bmr + 5 : bmr - 161;
+    bmr = (sex.toLowerCase() === 'male') ? bmr + 5 : bmr - 161;
     const maintenanceTDEE = Math.round(bmr * 1.375);
     let targetDailyCalories = maintenanceTDEE;
     let targets = { p: 0.25, c: 0.50, f: 0.25 };

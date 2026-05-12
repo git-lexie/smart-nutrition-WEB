@@ -13,12 +13,12 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
   // Local state for the form
   const [formData, setFormData] = useState({
     age: '',
-    gender: 'Male',
+    sex: 'Male',
     height: '',
     weight: '',
     activityLevel: 'Moderate',
     goal: 'Weight Loss',
-    voiceGender: 'female' // Default AI Voice
+    voiceSex: 'female' // Default AI Voice
   });
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +54,7 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
 
         <form onSubmit={handleSubmit} className="space-y-5">
           
-          {/* Row 1: Age & Gender */}
+          {/* Row 1: Age & Sex */}
           <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
                <label className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1"><User size={12}/> Age</label>
@@ -67,10 +67,10 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
                />
              </div>
              <div className="space-y-2">
-               <label className="text-[10px] font-bold text-slate-500 uppercase">Gender</label>
+               <label className="text-[10px] font-bold text-slate-500 uppercase">Sex</label>
                <select 
-                 value={formData.gender}
-                 onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                 value={formData.sex}
+                 onChange={(e) => setFormData({...formData, sex: e.target.value})}
                  className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-white outline-none cursor-pointer"
                >
                  <option>Male</option>
@@ -134,15 +134,15 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
                    <button
                      key={v}
                      type="button"
-                     onClick={() => setFormData({...formData, voiceGender: v.toLowerCase()})}
+                     onClick={() => setFormData({...formData, voiceSex: v.toLowerCase()})}
                      className={`flex-1 p-3 rounded-xl border transition-all flex items-center justify-center gap-2 ${
-                       formData.voiceGender === v.toLowerCase()
+                       formData.voiceSex === v.toLowerCase()
                        ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20' 
                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'
                      }`}
                    >
                      <span className="text-sm font-bold">{v}</span>
-                     {formData.voiceGender === v.toLowerCase() && <Check size={14} />}
+                     {formData.voiceSex === v.toLowerCase() && <Check size={14} />}
                    </button>
                 ))}
              </div>

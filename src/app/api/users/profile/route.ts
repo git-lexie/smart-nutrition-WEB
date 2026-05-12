@@ -16,16 +16,16 @@ export async function PUT(req: any) {
     
     await dbConnect();
     const body = await req.json();
-    const { age, gender, height, weight, goal, activityLevel, voiceGender } = body;
+  const { age, sex, height, weight, goal, activityLevel, voiceSex } = body;
     
     const updateFields: any = { "profile.isProfileComplete": true };
-    if (age) updateFields["profile.age"] = age;
-    if (gender) updateFields["profile.gender"] = gender;
-    if (height) updateFields["profile.height"] = height;
-    if (weight) updateFields["profile.weight"] = weight;
+  if (age) updateFields["profile.age"] = age;
+  if (sex) updateFields["profile.sex"] = sex;
+  if (height) updateFields["profile.height"] = height;
+  if (weight) updateFields["profile.weight"] = weight;
     if (goal) updateFields["profile.goal"] = goal;
     if (activityLevel) updateFields["profile.activityLevel"] = activityLevel;
-    if (voiceGender) updateFields["profile.voiceGender"] = voiceGender;
+  if (voiceSex) updateFields["profile.voiceSex"] = voiceSex;
 
     const updatedUser = await User.findByIdAndUpdate(decoded.id, { $set: updateFields }, { new: true }).lean();
     await logUserAction(decoded.id, 'PROFILE_UPDATE', { updateFields });

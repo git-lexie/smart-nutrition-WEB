@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 // --- HELPER: Speech Synthesis (AI Voice) ---
-const useSpeech = (gender: 'male' | 'female' = 'female') => {
+const useSpeech = (sex: 'male' | 'female' = 'female') => {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
@@ -29,19 +29,19 @@ const useSpeech = (gender: 'male' | 'female' = 'female') => {
     window.speechSynthesis.cancel(); // Stop any current speech
     
     const utterance = new SpeechSynthesisUtterance(text);
-    // Attempt to find a voice matching the gender preference
+  // Attempt to find a voice matching the sex preference
     const preferredVoice = voices.find(v => 
-      gender === 'male' 
+      sex === 'male' 
         ? (v.name.includes('Male') || v.name.includes('David')) 
         : (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Google US'))
     );
 
     if (preferredVoice) utterance.voice = preferredVoice;
     utterance.rate = 1.05; // Slightly faster for a professional, conversational flow
-    utterance.pitch = gender === 'female' ? 1.0 : 0.95;
+  utterance.pitch = sex === 'female' ? 1.0 : 0.95;
     
     window.speechSynthesis.speak(utterance);
-  }, [voices, gender]);
+  }, [voices, sex]);
 
   const stop = useCallback(() => {
     window.speechSynthesis.cancel();
@@ -149,7 +149,7 @@ export default function HomePage() {
   const [isBluetoothActive, setIsBluetoothActive] = useState(false);
 
   // Initialize Speech Engine
-  const { speak, stop } = useSpeech(user?.profile?.voiceGender || 'female');
+  const { speak, stop } = useSpeech(user?.profile?.voiceSex || 'female');
 
   // --- 1. DATA PERSISTENCE & SYNC ---
   const fetchHistory = useCallback(async (authToken: string) => {
@@ -262,9 +262,9 @@ export default function HomePage() {
   // --- 3. ACTIONS & CALCULATIONS ---
   const dailyStandard = useMemo(() => {
     if (!user?.profile) return { calories: 0, protein: 0, carbs: 0, fats: 0 };
-    const { weight, height, age, gender, activityLevel, goal } = user.profile;
+  const { weight, height, age, sex, activityLevel, goal } = user.profile;
     
-    let bmr = (gender?.toLowerCase() === 'male') 
+  let bmr = (sex?.toLowerCase() === 'male') 
       ? (10 * weight) + (6.25 * height) - (5 * age) + 5
       : (10 * weight) + (6.25 * height) - (5 * age) - 161;
 
