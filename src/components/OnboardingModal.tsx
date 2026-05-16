@@ -21,21 +21,50 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
     voiceGender: 'female' // Default AI Voice
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    // basic client-side validation and numeric parsing
+    const ageNum = Number(formData.age);
+    const heightNum = Number(formData.height);
+    const weightNum = Number(formData.weight);
+
+    if (!ageNum || ageNum < 10 || ageNum > 120) {
+      return setError('Please enter a valid age between 10 and 120.');
+    }
+    if (!heightNum || heightNum < 50 || heightNum > 250) {
+      return setError('Please enter a valid height in cm (50-250).');
+    }
+    if (!weightNum || weightNum < 20 || weightNum > 500) {
+      return setError('Please enter a valid weight in kg (20-500).');
+    }
+
     setLoading(true);
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      // prepare payload with numbers
+      const payload = {
+        age: ageNum,
+        gender: formData.gender,
+        height: heightNum,
+        weight: weightNum,
+        activityLevel: formData.activityLevel,
+        goal: formData.goal,
+        voiceGender: formData.voiceGender
+      };
+
       // 1. Send data to Backend
-      await axios.put(`${baseUrl}/api/user/profile`, formData, {
+      await axios.put(`${baseUrl}/api/user/profile`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // 2. Trigger completion in Parent (HomePage)
-      onComplete(formData);
-    } catch (error) {
-      alert("Failed to save profile. Please try again.");
+      onComplete(payload);
+    } catch (err) {
+      setError('Failed to save profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -53,6 +82,7 @@ export default function OnboardingModal({ token, onComplete }: OnboardingProps) 
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {error && <div className="mb-4 text-red-400 bg-red-900/20 p-3 rounded">{error}</div>}
           
           {/* Row 1: Age & Gender */}
           <div className="grid grid-cols-2 gap-4">

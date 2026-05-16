@@ -21,11 +21,20 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); 
+    // client-side validation
+    const name = formData.name.trim();
+    const email = formData.email.trim();
 
-    if (!validateEmail(formData.email)) {
+    const nameRe = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/;
+    if (!name || name.length < 2) {
+      return setError('Please enter your full name.');
+    }
+    if (!nameRe.test(name)) {
+      return setError('Name can only contain letters, spaces, hyphens and apostrophes.');
+    }
+    if (!validateEmail(email)) {
       return setError('Please enter a valid email address.');
     }
-
     if (formData.password !== formData.confirmPassword) {
       return setError('Passwords do not match.');
     }
@@ -41,8 +50,8 @@ export default function SignupPage() {
       console.log("Attempting to connect to:", endpoint); 
       
       await axios.post(endpoint, {
-        name: formData.name,
-        email: formData.email,
+        name,
+        email,
         password: formData.password
       });
       
@@ -53,7 +62,7 @@ export default function SignupPage() {
       if (!err.response) {
         setError('Cannot connect to server. Ensure the backend is running.');
       } else {
-        // This will now show the EXACT reason it crashed from the backend!
+       
         setError(err.response?.data?.message || 'Signup failed.');
       }
     } finally {
