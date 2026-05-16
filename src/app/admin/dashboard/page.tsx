@@ -41,9 +41,9 @@ export default function AdminDashboard() {
 
         if (!response.ok) {
           if (response.status === 401 || response.status === 403) {
-            setError("You do not have admin access.");
+            setError('You do not have admin access.');
           } else {
-            setError("Failed to load dashboard data.");
+            setError('Failed to load dashboard data.');
           }
           setLoading(false);
           return;
@@ -54,8 +54,8 @@ export default function AdminDashboard() {
         setLoading(false);
 
       } catch (err) {
-        console.error("Dashboard error:", err);
-        setError("An error occurred while fetching data.");
+        console.error('Dashboard error:', err);
+        setError('An error occurred while fetching data.');
         setLoading(false);
       }
     };

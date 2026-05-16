@@ -75,7 +75,7 @@ export default function ProfilePage() {
         localStorage.setItem('user', JSON.stringify(updatedUser));
 
         // NEW: Audio Feedback on Save
-        const utterance = new SpeechSynthesisUtterance("Profile settings updated.");
+        const utterance = new SpeechSynthesisUtterance('Profile settings updated.');
         const voices = window.speechSynthesis.getVoices();
         const preferredVoice = voices.find(v => 
           data.voiceGender === 'male' 
@@ -85,12 +85,12 @@ export default function ProfilePage() {
         if (preferredVoice) utterance.voice = preferredVoice;
         window.speechSynthesis.speak(utterance);
 
-        alert("Profile updated successfully!");
+        alert('Profile updated successfully!');
         router.push('/'); // Redirect to dashboard after saving
       }
     } catch (error: any) {
-      console.error("Update failed:", error);
-      const msg = error.response?.data?.message || "Failed to save profile.";
+      console.error('Update failed:', error);
+      const msg = error.response?.data?.message || 'Failed to save profile.';
       alert(msg);
     } finally {
       setLoading(false);
