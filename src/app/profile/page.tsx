@@ -18,7 +18,7 @@ export default function ProfilePage() {
     gender: 'Other',
     activityLevel: 'Sedentary (office job)',
     goal: 'Maintenance',
-    voiceGender: 'female' // NEW: Added Voice Preference state
+    voiceGender: 'female' 
   });
   
   const [token, setToken] = useState('');
@@ -52,12 +52,26 @@ export default function ProfilePage() {
   const handleUpdate = async () => {
     if (!token) return;
     setLoading(true);
-    
+    // validate name before sending
+    const name = (data.name || '').trim();
+    const nameRe = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/;
+    if (!name || name.length < 2) {
+      alert('Please enter a valid full name.');
+      setLoading(false);
+      return;
+    }
+    if (!nameRe.test(name)) {
+      alert('Name can only contain letters, spaces, hyphens and apostrophes.');
+      setLoading(false);
+      return;
+    }
+    // ensure we send trimmed name
+    const payload = { ...data, name };
     try {
       // const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       
       // 1. Send update to Backend
-      const response = await axios.put(`/api/user/profile`, data, { 
+      const response = await axios.put(`/api/user/profile`, payload, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
 

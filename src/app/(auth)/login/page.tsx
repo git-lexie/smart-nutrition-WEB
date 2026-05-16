@@ -14,9 +14,22 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); setLoading(true);
+    setError('');
+    // client-side validation
+    const email = formData.email.trim();
+    const password = formData.password;
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!re.test(email)) {
+      return setError('Please enter a valid email address.');
+    }
+
+    if (password.length < 6) {
+      return setError('Password must be at least 6 characters long.');
+    }
+
+    setLoading(true);
     try {
-      const res = await axios.post('/api/auth/login', formData);
+      const res = await axios.post('/api/auth/login', { email: email, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
       router.push('/home');
