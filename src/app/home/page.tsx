@@ -67,7 +67,7 @@ const generateAnalysisSpeech = (data: any, globalUnit: string, isHistory: boolea
     const date = new Date(data.createdAt || data.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
     narrative += `Pulling up your nutrition record from ${date}. `;
   } else {
-    narrative += "Analysis complete. ";
+    narrative += 'Analysis complete. ';
   }
 
   // 2. Total Context
@@ -76,7 +76,7 @@ const generateAnalysisSpeech = (data: any, globalUnit: string, isHistory: boolea
 
   // 3. Detailed Breakdown (Alive Aspect)
   if (data.foods && data.foods.length > 0) {
-    narrative += "Here is the detailed nutritional breakdown. ";
+    narrative += 'Here is the detailed nutritional breakdown. ';
     data.foods.forEach((f: any) => {
        // FIX: Determine correct path for macros based on context (Live vs History)
        let dCalories = 0, dProtein = 0, dCarbs = 0, dFats = 0;
@@ -160,7 +160,7 @@ export default function HomePage() {
       });
       setHistory(res.data);
     } catch (err) { 
-      console.log("History fetch failed (likely offline)"); 
+      console.log('History fetch failed (likely offline)'); 
     }
   }, []);
 
@@ -178,10 +178,10 @@ export default function HomePage() {
       
       await clearSyncedSessions(offlineData.map((d: any) => d.id as number)); 
       await fetchHistory(authToken);
-      speak("System online. Offline data has been synchronized.");
+      speak('System online. Offline data has been synchronized.');
 
     } catch (err) {
-      console.error("Sync to MongoDB failed", err);
+      console.error('Sync to MongoDB failed', err);
     } finally {
       setIsSyncing(false);
     }
@@ -207,7 +207,7 @@ export default function HomePage() {
     };
     const handleOffline = () => {
       setIsOffline(true);
-      speak("Connection lost. Switching to local storage.");
+      speak('Connection lost. Switching to local storage.');
     };
 
     window.addEventListener('online', handleOnline);
@@ -225,7 +225,7 @@ export default function HomePage() {
       if (!hasWelcomed) {
           const hour = new Date().getHours();
           // Professional Time-based greeting
-          const timeGreeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+          const timeGreeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
           
           setTimeout(() => {
             speak(`${timeGreeting}, ${user.name}. Your expert coach is ready. Please place an item on the scale to begin tracking.`);
@@ -239,7 +239,7 @@ export default function HomePage() {
     stop();
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Your browser does not support voice input.");
+      alert('Your browser does not support voice input.');
       return;
     }
 
@@ -361,7 +361,7 @@ export default function HomePage() {
   const handleAddFood = () => {
     // Smart Warning: Check for empty input
     if (!foodName || !weight) {
-        speak("I cannot add that. Please identify the food and its weight first.");
+        speak('I cannot add that. Please identify the food and its weight first.');
         return;
     }
 
@@ -401,13 +401,13 @@ export default function HomePage() {
             setUnit('g'); 
         });
         if (success) {
-            speak("Scale connected.");
+            speak('Scale connected.');
             setIsBluetoothActive(true);
         } else {
-             speak("Connection failed.");
+             speak('Connection failed.');
         }
     } catch (e) {
-        speak("Error connecting.");
+        speak('Error connecting.');
     }
   };
 
@@ -434,7 +434,7 @@ export default function HomePage() {
 
   // --- EDIT & DELETE LOGIC ---
   const handleDeleteSession = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this session?")) return;
+    if (!confirm('Are you sure you want to delete this session?')) return;
     try {
       // const baseUrl = process.env.NEXT_PUBLIC_API_URL;
       await axios.delete(`/api/user/session/${id}`, {
@@ -442,10 +442,10 @@ export default function HomePage() {
       });
       setHistory(prev => prev.filter(s => s._id !== id));
       if (openSessionId === id) setOpenSessionId(null);
-      speak("Session successfully deleted.");
+      speak('Session successfully deleted.');
     } catch (err) {
-      console.error("Delete failed", err);
-      speak("Could not delete the session.");
+      console.error('Delete failed', err);
+      speak('Could not delete the session.');
     }
   };
 
@@ -494,7 +494,7 @@ export default function HomePage() {
     setFoodList(hydratedFoods); // Put the recalculated items on the plate
     setOpenSessionId(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    speak("Session loaded. You can now modify the items and save to update.");
+    speak('Session loaded. You can now modify the items and save to update.');
   };
 
   const runAIAnalysis = async () => {
@@ -502,19 +502,19 @@ export default function HomePage() {
     
     // Smart Warning: Check for empty plate
     if (foodList.length === 0 && unsavedFoods.length === 0) {
-        speak("Your plate appears empty. Please add a food item so I can perform the analysis.");
+        speak('Your plate appears empty. Please add a food item so I can perform the analysis.');
         return;
     }
     
     setLoadingAI(true);
     stop(); 
-    speak("Processing meal composition. Please wait a moment.");
+    speak('Processing meal composition. Please wait a moment.');
 
     // --- UPDATED OFFLINE LOGIC ---
     if (isOffline) {
       // Map the state data to strictly match the MealLog interface in db.ts
       const offlineMealLog = {
-        local_user_id: user?.id || user?._id || "guest", 
+        local_user_id: user?.id || user?._id || 'guest', 
         timestamp: new Date().toISOString(),
         total_calories: Number(plateTotals?.calories || 0),
         total_protein: Number(plateTotals?.protein || 0),
@@ -531,10 +531,10 @@ export default function HomePage() {
         setFoodList(prev => prev.map(item => ({ ...item, isSaved: true })));
         setLoadingAI(false);
         if (editingSessionId) setEditingSessionId(null);
-        speak("Session saved locally. I will sync this when we are back online.");
+        speak('Session saved locally. I will sync this when we are back online.');
       } catch (error) {
-        console.error("Failed to save offline:", error);
-        speak("Storage error. Could not save session.");
+        console.error('Failed to save offline:', error);
+        speak('Storage error. Could not save session.');
         setLoadingAI(false);
       }
       return;
@@ -574,7 +574,7 @@ export default function HomePage() {
       speak(speechText);
 
     } catch (error) {
-      speak("I encountered a service error. Please try again.");
+      speak('I encountered a service error. Please try again.');
     } finally { 
       setLoadingAI(false); 
     }
@@ -614,7 +614,7 @@ export default function HomePage() {
             };
             setUser(updatedUser);
             localStorage.setItem('user', JSON.stringify(updatedUser));
-            speak("Calibration complete. Welcome to your new lifestyle.");
+            speak('Calibration complete. Welcome to your new lifestyle.');
           }} 
         />
       )}

@@ -38,7 +38,7 @@ export default function SignupPage() {
 
     try {
       const endpoint = '/api/auth/signup';
-      console.log("Attempting to connect to:", endpoint); 
+      console.log('Attempting to connect to:', endpoint); 
       
       await axios.post(endpoint, {
         name: formData.name,
@@ -48,7 +48,7 @@ export default function SignupPage() {
       
       router.push('/login');
     } catch (err: any) { 
-      console.error("Signup Error Details:", err); 
+      console.error('Signup Error Details:', err); 
       
       if (!err.response) {
         setError('Cannot connect to server. Ensure the backend is running.');
