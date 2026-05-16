@@ -155,7 +155,7 @@ export default function HomePage() {
   const fetchHistory = useCallback(async (authToken: string) => {
     try {
       // const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      const res = await axios.get(`/api/user/history?limit=10`, {
+      const res = await axios.get(`/api/users/history?limit=10`, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       setHistory(res.data);
@@ -171,7 +171,7 @@ export default function HomePage() {
     setIsSyncing(true);
     try {
       // const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      await axios.post(`/api/user/sync`, { sessions: offlineData }, {
+      await axios.post(`/api/users/sync`, { sessions: offlineData }, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       
@@ -437,7 +437,7 @@ export default function HomePage() {
     if (!confirm("Are you sure you want to delete this session?")) return;
     try {
       // const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-      await axios.delete(`/api/user/session/${id}`, {
+      await axios.delete(`/api/users/session/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHistory(prev => prev.filter(s => s._id !== id));
@@ -554,12 +554,12 @@ export default function HomePage() {
       let response;
       
       if (editingSessionId) {
-        response = await axios.put(`/api/user/session/${editingSessionId}`, sessionData, {
+        response = await axios.put(`/api/users/session/${editingSessionId}`, sessionData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setEditingSessionId(null);
       } else {
-        response = await axios.post(`/api/user/session`, sessionData, {
+        response = await axios.post(`/api/users/session`, sessionData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
