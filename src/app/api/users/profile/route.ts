@@ -1,37 +1,72 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import jwt from 'jsonwebtoken';
 import dbConnect from '@/lib/mongoose';
 import User from '@/models/User';
-import AuditLog from '@/models/AuditLog';
-import { verifyAuth } from '@/lib/auth';
 
-const logUserAction = async (userId: any, action: string, details = {}) => {
-  try { await AuditLog.create({ userId, action, details }); } 
-  catch (error) { console.error("Failed to write to audit log:", error); }
-};
-
-export async function PUT(req: any) {
+export async function PUT(req: Request) {
   try {
-    const decoded = verifyAuth(req);
-    if (!decoded) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    
     await dbConnect();
-    const body = await req.json();
-    const { age, gender, height, weight, goal, activityLevel, voiceGender } = body;
-    
-    const updateFields: any = { "profile.isProfileComplete": true };
-    if (age) updateFields["profile.age"] = age;
-    if (gender) updateFields["profile.gender"] = gender;
-    if (height) updateFields["profile.height"] = height;
-    if (weight) updateFields["profile.weight"] = weight;
-    if (goal) updateFields["profile.goal"] = goal;
-    if (activityLevel) updateFields["profile.activityLevel"] = activityLevel;
-    if (voiceGender) updateFields["profile.voiceGender"] = voiceGender;
 
-    const updatedUser = await User.findByIdAndUpdate(decoded.id, { $set: updateFields }, { new: true }).lean();
-    await logUserAction(decoded.id, 'PROFILE_UPDATE', { updateFields });
+    // 1. Authenticate user from the token
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    const userId = decoded.id || decoded.userId;
+
+    // 2. Parse the body from the frontend
+    const body = await req.json();
+
+    // 3. Destructure and shape the data to match your Mongoose Schema
+    const { 
+      name, 
+      age, 
+      height, 
+      weight, 
+      gender, 
+      activityLevel, 
+      goal, 
+      voiceGender 
+    } = body;
+
+    const updatePayload = {
+      name: name, // Allow name update
+      profile: {
+        age,
+        height,
+        weight,
+        gender,
+        activityLevel,
+        goal,
+        voiceGender
+      },
+      isProfileComplete: true
+    };
+
+    // 4. Update the Database
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updatePayload },
+      { new: true, runValidators: true }
+    ).select('-password'); // Exclude password from the response
+
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, user: updatedUser }, { status: 200 });
+
+  } catch (error: any) {
+    console.error("PROFILE UPDATE ERROR:", error);
     
-    return NextResponse.json({ success: true, user: updatedUser });
-  } catch (err) {
-    return NextResponse.json({ message: "Error updating profile" }, { status: 500 });
+    // Catch JWT expiration or invalid signatures gracefully
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    }
+
+    return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
   }
 }

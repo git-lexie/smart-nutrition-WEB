@@ -158,7 +158,7 @@ export default function HomePage() {
   // --- 1. DATA PERSISTENCE & SYNC ---
   const fetchHistory = useCallback(async (authToken: string) => {
     try {
-      const res = await axios.get(`/api/user/history?limit=10`, {
+      const res = await axios.get(`/api/users/history?limit=10`, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       setHistory(res.data);
@@ -173,7 +173,7 @@ export default function HomePage() {
 
     setIsSyncing(true);
     try {
-      await axios.post(`/api/user/sync`, { sessions: offlineData }, {
+      await axios.post(`/api/sessions/sync`, { sessions: offlineData }, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       
@@ -437,7 +437,7 @@ export default function HomePage() {
   const handleDeleteSession = async (id: string) => {
     if (!confirm("Are you sure you want to delete this session?")) return;
     try {
-      await axios.delete(`/api/user/session/${id}`, {
+      await axios.delete(`/api/sessions/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setHistory(prev => prev.filter(s => s._id !== id));
@@ -538,12 +538,12 @@ export default function HomePage() {
     try {
       let response;
       if (editingSessionId) {
-        response = await axios.put(`/api/user/session/${editingSessionId}`, sessionData, {
+        response = await axios.put(`/api/sessions/${editingSessionId}`, sessionData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setEditingSessionId(null);
       } else {
-        response = await axios.post(`/api/user/session`, sessionData, {
+        response = await axios.post(`/api/sessions`, sessionData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
