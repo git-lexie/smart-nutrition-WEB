@@ -18,8 +18,8 @@ export async function PUT(req: any, context: { params: { id: string } }) {
     if (!decoded) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     
     await dbConnect();
-    const sessionId = context.params.id; // Fixed Next.js param access
-    const { foods, goal, totalMacros, date } = await req.json(); // Fixed missing ()
+    const sessionId = context.params.id; 
+    const { foods, goal, totalMacros, date } = await req.json(); 
 
     const session = await DietarySession.findOne({ _id: sessionId, userId: decoded.id });
     if (!session) return NextResponse.json({ message: "Session not found" }, { status: 404 });

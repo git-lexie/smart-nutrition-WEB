@@ -4,6 +4,11 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  
+  // NEW: Fields for tracking password reset OTP codes - Ken
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
+
   profile: {
     age: String,
     gender: String,
@@ -15,6 +20,5 @@ const UserSchema = new mongoose.Schema({
     isProfileComplete: { type: Boolean, default: false }
   }
 });
-
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);

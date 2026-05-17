@@ -1,16 +1,17 @@
 import mongoose from 'mongoose'
 
-const MONGODB_URI = 
-process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-    throw new Error ('Please define the MONGO_URI environment variable inside .env.local');
+    throw new Error('Please define the MONGO_URI environment variable inside .env.local');
 }
 
-let cached = global.mongooose;
+// Fixed the spelling to 'mongoose' here
+let cached = global.mongoose; 
 
 if (!cached){
-    cached = global.mongooose = { conn: null, promise:null };
+    // Fixed the spelling to 'mongoose' here too
+    cached = global.mongoose = { conn: null, promise:null }; 
 }
 
 async function dbConnect() {
@@ -20,12 +21,12 @@ async function dbConnect() {
 
     if (!cached.promise){
         const opts = { bufferCommands: false};
-        cached.promise =
-        mongoose.connect (MONGODB_URI, opts).then((mongoose) => {
+        cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
             return mongoose;
         }); 
     }
     cached.conn = await cached.promise;
     return cached.conn;
 }
+
 export default dbConnect;
