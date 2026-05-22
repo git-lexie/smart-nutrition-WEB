@@ -49,32 +49,37 @@ export async function PUT(req: any, context: { params: { id: string } }) {
         sessionHistory,
       );
     } else {
-      analysisResult = {
-        advice: "Meal updated successfully.",
-        recommendedActivity: null,
-        recommendedFoods: [],
-        quote: "Adjustments lead to progress.",
+      analysisResult = { 
+        advice: "Meal updated successfully.", 
+        recommendedActivity: null, 
+        recommendedFoods: [], 
+        quote: "Adjustments lead to progress." 
       };
     }
 
     const updatedSession = await DietarySession.findByIdAndUpdate(
       sessionId,
-      {
-        foods,
-        macros: totalMacros,
-        date: date || session.date,
-        advice: analysisResult.advice,
-        recommendedActivity: analysisResult.recommendedActivity,
-        recommendedFoods: analysisResult.recommendedFoods,
-        quote: analysisResult.quote,
+      { 
+        foods, 
+        macros: totalMacros, 
+        date: date || session.date, 
+        advice: analysisResult.advice, 
+        recommendedActivity: analysisResult.recommendedActivity, 
+        recommendedFoods: analysisResult.recommendedFoods, 
+        quote: analysisResult.quote 
       },
-      { new: true },
+      { new: true }
     );
 
-    await logUserAction(decoded.id, "SESSION_EDITED", {
-      sessionId,
-      UserId: decoded.id,
-    });
+    await logUserAction(
+      decoded.id, 
+      'SESSION_EDITED', 
+      { 
+        sessionId, 
+        UserId: decoded.id 
+      }
+    );
+    
     return NextResponse.json(updatedSession);
   } catch (error) {
     return NextResponse.json(
