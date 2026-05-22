@@ -42,17 +42,36 @@ export async function POST(req: any) {
     if (aiService && typeof aiService.analyzeFoodList === 'function') {
       analysisResult = await aiService.analyzeFoodList(foods, user?.profile || {}, sessionHistory);
     } else {
-      analysisResult = { advice: "Great job tracking.", recommendedActivity: null, recommendedFoods: [], quote: "Consistency is key." };
+      analysisResult = { 
+        advice: "Great job tracking.", 
+        recommendedActivity: null, 
+        recommendedFoods: [], 
+        quote: "Consistency is key." 
+      };
     }
 
     const newSession = await DietarySession.create({
-      userId: decoded.id, goal: goal || user?.profile?.goal, foods, macros: totalMacros, date: date || new Date().toISOString(),
-      advice: analysisResult.advice, recommendedActivity: analysisResult.recommendedActivity,
-      recommendedFoods: analysisResult.recommendedFoods, quote: analysisResult.quote
+      userId: decoded.id, 
+      goal: goal || user?.profile?.goal, 
+      foods, 
+      macros: totalMacros, 
+      date: date || new Date().toISOString(),
+      advice: analysisResult.advice, 
+      recommendedActivity: analysisResult.recommendedActivity,
+      recommendedFoods: analysisResult.recommendedFoods, 
+      quote: analysisResult.quote
     });
     
     // Using our new centralized logger!
-    await logUserAction(decoded.id, 'SESSION_CREATED', { sessionGoal: goal, calories: totalMacros?.calories });
+    await logUserAction(
+      decoded.id, 
+      'SESSION_CREATED', 
+      { 
+        sessionGoal: goal, 
+        calories: totalMacros?.calories 
+      }
+    );
+    
     return NextResponse.json(newSession);
   } catch (error) {
     console.error(error);

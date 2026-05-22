@@ -38,7 +38,10 @@ export async function PUT(req: any) {
     ).lean();
     await logUserAction(decoded.id, "PROFILE_UPDATE", { updateFields });
 
-    return NextResponse.json({ success: true, user: updatedUser });
+    return NextResponse.json({
+      success: true,
+      user: updatedUser
+    });
   } catch (err) {
     return NextResponse.json(
       { message: "Error updating profile" },
